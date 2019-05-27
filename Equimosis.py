@@ -3,7 +3,6 @@ from __future__ import absolute_import, division, print_function
 import os
 import matplotlib.pyplot as plt
 
-import os
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
   
 import tensorflow as tf
@@ -15,13 +14,12 @@ print("TensorFlow version: {}".format(tf.VERSION))
 print("Eager execution: {}".format(tf.executing_eagerly()))
 
 #train_file = "EquimosisTrain.csv"
-train_file = "EquimosisTrainRaw.csv"
+train_file = "EquimosisTrainingOrig.csv"
 
 train_dataset_fp = tf.keras.utils.get_file(fname=os.path.basename(train_file),
                                            origin=train_file)
 
 print("Local copy of the dataset file: {}".format(train_dataset_fp))
-
 
 def parse_csv(line):
   example_defaults = [[0.], [0.], [0.], [0.],[0.],[0.],[0.],[0.],[0.],[0.], [0]]  # sets field types
@@ -35,7 +33,7 @@ def parse_csv(line):
 train_dataset = tf.data.TextLineDataset(train_dataset_fp)
 train_dataset = train_dataset.skip(1)             # skip the first header row
 train_dataset = train_dataset.map(parse_csv)      # parse each row
-train_dataset = train_dataset.shuffle(buffer_size=1000)  # randomize
+train_dataset = train_dataset.shuffle(buffer_size=35)  # randomize
 train_dataset = train_dataset.batch(5)
 
 # View a single example entry from a batch
@@ -67,7 +65,7 @@ optimizer = tf.train.GradientDescentOptimizer(learning_rate=0.01)
 train_loss_results = []
 train_accuracy_results = []
 
-num_epochs = 100
+num_epochs = 20
 
 for epoch in range(num_epochs):
   epoch_loss_avg = tfe.metrics.Mean()
@@ -105,15 +103,15 @@ axes[1].set_xlabel("Epoch", fontsize=14)
 axes[1].plot(train_accuracy_results)
 
 #test_file = "EquimosisTest.csv"
-test_file = "EquimosisTestRaw.csv"
+test_file = "EquimosisTestOrig.csv"
 
 test_fp = tf.keras.utils.get_file(fname=os.path.basename(test_file),
                                   origin=test_file)
 
 test_dataset = tf.data.TextLineDataset(test_fp)
 test_dataset = test_dataset.skip(1)             # skip header row
-test_dataset = test_dataset.map(parse_csv)      # parse each row with the funcition created earlier
-test_dataset = test_dataset.shuffle(1000)       # randomize
+test_dataset = test_dataset.map(parse_csv)      # parse each row with the function created earlier
+test_dataset = test_dataset.shuffle(15)       # randomize
 test_dataset = test_dataset.batch(5)           # use the same batch size as the training set
 
 test_accuracy = tfe.metrics.Accuracy()
@@ -135,7 +133,9 @@ predict_dataset = tf.convert_to_tensor([
 predictions = model(predict_dataset)
 
 for i, logits in enumerate(predictions):
+  #print (i,logits)
   class_idx = tf.argmax(logits).numpy()
+  #print (class_idx)
   name = class_ids[class_idx]
   print("Example {} prediction: {}".format(i, name))
   
