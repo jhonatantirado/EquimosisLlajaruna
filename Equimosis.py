@@ -7,6 +7,7 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
   
 import tensorflow as tf
 import tensorflow.contrib.eager as tfe
+import math
 
 tf.enable_eager_execution()
 
@@ -57,7 +58,12 @@ def grad(model, inputs, targets):
     loss_value = loss(model, inputs, targets)
   return tape.gradient(loss_value, model.variables)
 
-optimizer = tf.train.GradientDescentOptimizer(learning_rate=0.01)
+# step for variable learning rate
+step = 1
+# the learning rate is: # 0.0001 + 0.003 * (1/e)^(step/2000)), i.e. exponential decay from 0.003->0.0001
+#lr = 0.0001 +  tf.train.exponential_decay(0.003, step, 2000, 1/math.e)
+
+optimizer = tf.train.AdamOptimizer(learning_rate=0.01)
 
 ## Note: Rerunning this cell uses the same model variables
 
